@@ -4,12 +4,13 @@ import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/user.dto';
 import { UserAuth } from './schema/user.schema';
-import { LoginDto } from './dto/login.user.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(UserAuth.name) private readonly userModel: Model<UserAuth>,
+    private jwtService: JwtService,
   ) {}
 
   // get all //
@@ -47,7 +48,7 @@ export class UserService {
 
   // login //
 
-  async login(request: LoginDto) {
+  async login(request: any) {
     const user = await this.userModel.findOne({
       firstname: request.firstname,
       email: request.email,
@@ -66,13 +67,16 @@ export class UserService {
       return 'Incorrect password';
     }
 
-    const response = {
+    const payload = {
+      id: request.id,
       firstname: request.firstname,
       lastname: request.lastname,
       email: request.email,
     };
 
-    return response;
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+    };
   }
 
   // delete //

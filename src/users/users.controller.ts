@@ -8,22 +8,26 @@ import {
   Delete,
   Param,
   Request,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/user.dto';
 import { UserService } from './users.service';
-import { LoginDto } from './dto/login.user.dto';
-// import { AuthService } from 'src/auth/auth.service';
 
 @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
 @Controller('auth')
 export class UserController {
-  constructor(
-    private readonly userService: UserService, // private authService: AuthService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
-  @Get('get')
+  @UseGuards()
+  @Get('profile')
   getProfile(@Request() req) {
-    return req.username;
+    const response = {
+      firstname: req.username.firstname,
+      lastname: req.username.lastname,
+      email: req.username.email,
+    };
+
+    return response;
   }
 
   @Post('register')
@@ -32,7 +36,7 @@ export class UserController {
   }
 
   @Post('login')
-  async login(@Body() request: LoginDto) {
+  async login(@Body() request: any) {
     return this.userService.login(request);
   }
 
